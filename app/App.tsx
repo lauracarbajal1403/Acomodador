@@ -734,6 +734,13 @@ const handleClassify = async () => {
         </div>
       </div>
 
+      <div className="mt-10 flex flex-wrap gap-4 items-center">
+            
+            <span className="ml-4 text-[10px] text-white  bg-[#0a0a0a] border border-gray-800 px-3 py-1 rounded-full">
+              💡 Haz clic en una torre para ver sus tareas · Arrastra para mover entre torres
+            </span>
+        </div>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {sections.map((section, i) => {
           const sectionTasks = tasks.filter(t => t.torre === section.id);
@@ -830,6 +837,7 @@ const handleClassify = async () => {
         </div>
       )}
     </div>
+    
   );
 };
 

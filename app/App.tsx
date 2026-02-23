@@ -518,7 +518,6 @@ const CycleDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
 
 // --- View: Task Classifier ---
-
 interface ClassifiedTask {
   id: string;
   description: string;
@@ -527,14 +526,16 @@ interface ClassifiedTask {
   timestamp: number;
 }
 
+const CRITICIDAD_ORDER = { P0: 0, P1: 1, P2: 2, P3: 3 };
+
 const TaskClassifier: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [input, setInput] = useState('');
   const [isClassifying, setIsClassifying] = useState(false);
   const [tasks, setTasks] = useState<ClassifiedTask[]>([]);
   const [selectedTorre, setSelectedTorre] = useState<'SOPORTE' | 'CLIENTES' | 'PRODUCTO' | null>(null);
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
+  const [criticidadFilter, setCriticidadFilter] = useState<'P0' | 'P1' | 'P2' | 'P3' | null>(null);
 
-  // Load tasks on mount
   useEffect(() => {
     fetchTasks();
   }, []);
@@ -550,42 +551,43 @@ const TaskClassifier: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       console.error("Error fetching tasks:", error);
     }
   };
-const handleClassify = async () => {
-  if (!input.trim() || isClassifying) return;
-  setIsClassifying(true);
-  try {
-    const classifyRes = await fetch('/api/classify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ description: input }),
-    });
-    const result = await classifyRes.json();
 
-    const newTask: ClassifiedTask = {
-      id: Math.random().toString(36).substr(2, 9),
-      description: input,
-      torre: result.torre,
-      criticidad: result.criticidad,
-      timestamp: Date.now(),
-    };
+  const handleClassify = async () => {
+    if (!input.trim() || isClassifying) return;
+    setIsClassifying(true);
+    try {
+      const classifyRes = await fetch('/api/classify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description: input }),
+      });
+      const result = await classifyRes.json();
 
-    const saveResponse = await fetch('/api/tasks', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newTask),
-    });
+      const newTask: ClassifiedTask = {
+        id: Math.random().toString(36).substr(2, 9),
+        description: input,
+        torre: result.torre,
+        criticidad: result.criticidad,
+        timestamp: Date.now(),
+      };
 
-    if (saveResponse.ok) {
-      setTasks(prev => [newTask, ...prev]);
-      setInput('');
+      const saveResponse = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newTask),
+      });
+
+      if (saveResponse.ok) {
+        setTasks(prev => [newTask, ...prev]);
+        setInput('');
+      }
+    } catch (error) {
+      console.error("Error classifying task:", error);
+      alert("Error al clasificar la tarea. Por favor intenta de nuevo.");
+    } finally {
+      setIsClassifying(false);
     }
-  } catch (error) {
-    console.error("Error classifying task:", error);
-    alert("Error al clasificar la tarea. Por favor intenta de nuevo.");
-  } finally {
-    setIsClassifying(false);
-  }
-};
+  };
 
   const updateTaskCriticidad = async (taskId: string, newLevel: 'P0' | 'P1' | 'P2' | 'P3') => {
     try {
@@ -594,7 +596,6 @@ const handleClassify = async () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ criticidad: newLevel }),
       });
-
       if (response.ok) {
         setTasks(prev => prev.map(t => t.id === taskId ? { ...t, criticidad: newLevel } : t));
       }
@@ -610,7 +611,6 @@ const handleClassify = async () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ torre: newTorre }),
       });
-
       if (response.ok) {
         setTasks(prev => prev.map(t => t.id === taskId ? { ...t, torre: newTorre } : t));
       }
@@ -619,15 +619,20 @@ const handleClassify = async () => {
     }
   };
 
-  const onDragStart = (taskId: string) => {
-    setDraggedTaskId(taskId);
-  };
+  const onDragStart = (taskId: string) => setDraggedTaskId(taskId);
 
   const onDrop = (newTorre: 'SOPORTE' | 'CLIENTES' | 'PRODUCTO') => {
     if (draggedTaskId) {
       moveTask(draggedTaskId, newTorre);
       setDraggedTaskId(null);
     }
+  };
+
+  const getFilteredSortedTasks = (torre: 'SOPORTE' | 'CLIENTES' | 'PRODUCTO') => {
+    return tasks
+      .filter(t => t.torre === torre)
+      .filter(t => criticidadFilter === null || t.criticidad === criticidadFilter)
+      .sort((a, b) => CRITICIDAD_ORDER[a.criticidad] - CRITICIDAD_ORDER[b.criticidad]);
   };
 
   const sections = [
@@ -664,8 +669,18 @@ const handleClassify = async () => {
     }
   };
 
+  const getCriticidadDot = (level: string) => {
+    switch (level) {
+      case 'P0': return 'bg-rose-500';
+      case 'P1': return 'bg-orange-500';
+      case 'P2': return 'bg-cyan-400';
+      case 'P3': return 'bg-violet-400';
+      default: return 'bg-gray-600';
+    }
+  };
+
   const TaskCard = ({ task }: { task: ClassifiedTask }) => (
-    <div 
+    <div
       draggable
       onDragStart={() => onDragStart(task.id)}
       className="bg-[#161616] border border-gray-800/50 p-4 rounded-2xl group hover:border-gray-700 transition-all cursor-grab active:cursor-grabbing"
@@ -675,12 +690,9 @@ const handleClassify = async () => {
           {(['P0', 'P1', 'P2', 'P3'] as const).map(level => (
             <button
               key={level}
-              onClick={(e) => {
-                e.stopPropagation();
-                updateTaskCriticidad(task.id, level);
-              }}
+              onClick={(e) => { e.stopPropagation(); updateTaskCriticidad(task.id, level); }}
               className={`text-[8px] font-black px-1.5 py-0.5 rounded border transition-all ${
-                task.criticidad === level 
+                task.criticidad === level
                   ? getCriticidadColor(level)
                   : 'text-gray-600 border-gray-800 hover:border-gray-700'
               }`}
@@ -699,13 +711,46 @@ const handleClassify = async () => {
     </div>
   );
 
+  // Criticidad filter bar — shared across all towers
+  const CriticidadFilterBar = () => (
+    <div className="flex items-center gap-2">
+      <span className="text-[9px] font-black text-gray-600 uppercase tracking-[0.2em]">Filtrar:</span>
+      <div className="flex gap-1.5">
+        {(['P0', 'P1', 'P2', 'P3'] as const).map(level => {
+          const isActive = criticidadFilter === level;
+          return (
+            <button
+              key={level}
+              onClick={(e) => { e.stopPropagation(); setCriticidadFilter(isActive ? null : level); }}
+              className={`text-[9px] font-black px-2.5 py-1 rounded-lg border transition-all duration-150 ${
+                isActive
+                  ? getCriticidadColor(level) + ' scale-105'
+                  : 'text-gray-600 border-gray-800 hover:border-gray-600 hover:text-gray-400'
+              }`}
+            >
+              {level}
+            </button>
+          );
+        })}
+        {criticidadFilter && (
+          <button
+            onClick={(e) => { e.stopPropagation(); setCriticidadFilter(null); }}
+            className="text-[9px] font-black px-2 py-1 rounded-lg border border-gray-800 text-gray-600 hover:text-white hover:border-gray-600 transition-all"
+          >
+            ✕
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-black p-6 md:p-10 max-w-[1400px] mx-auto relative">
       <BackButton onClick={onBack} />
-      
+
       <div className="mb-12 max-w-4xl mx-auto">
         <div className="bg-[#161616] border border-gray-800 rounded-3xl p-4 flex items-center shadow-2xl focus-within:border-cyan-500/50 transition-all">
-          <input 
+          <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -714,7 +759,7 @@ const handleClassify = async () => {
             className="flex-grow bg-transparent border-none outline-none text-gray-300 px-4 py-2 text-lg placeholder-gray-700"
             disabled={isClassifying}
           />
-          <button 
+          <button
             onClick={handleClassify}
             disabled={isClassifying}
             className={`bg-white text-black font-black px-8 py-4 rounded-2xl hover:bg-gray-200 transition-all uppercase tracking-wider text-sm flex items-center space-x-2 ${isClassifying ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -734,33 +779,70 @@ const handleClassify = async () => {
         </div>
       </div>
 
-      
+      {/* Global filter bar */}
+      <div className="mb-6 flex items-center justify-between max-w-4xl">
+        <CriticidadFilterBar />
+        {criticidadFilter && (
+          <span className="text-[10px] text-gray-600 italic">
+            Mostrando solo <span className={`font-black ${getCriticidadColor(criticidadFilter).split(' ')[0]}`}>{criticidadFilter}</span> en todas las torres
+          </span>
+        )}
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {sections.map((section, i) => {
-          const sectionTasks = tasks.filter(t => t.torre === section.id);
+          const allSectionTasks = tasks.filter(t => t.torre === section.id);
+          const filteredTasks = getFilteredSortedTasks(section.id);
           const isActive = selectedTorre === section.id;
+
+          // Count by criticidad for the badge chips
+          const counts = { P0: 0, P1: 0, P2: 0, P3: 0 };
+          allSectionTasks.forEach(t => counts[t.criticidad]++);
+
           return (
-            <div 
-              key={i} 
+            <div
+              key={i}
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => onDrop(section.id)}
               onClick={() => setSelectedTorre(isActive ? null : section.id)}
               className={`bg-[#0a0a0a] p-10 rounded-[40px] border-2 transition-all duration-500 flex flex-col min-h-[500px] cursor-pointer group ${
-                isActive 
-                  ? 'border-cyan-400 shadow-[0_0_50px_rgba(34,211,238,0.2)] scale-[1.02]' 
-                  : section.highlight 
+                isActive
+                  ? 'border-cyan-400 shadow-[0_0_50px_rgba(34,211,238,0.2)] scale-[1.02]'
+                  : section.highlight
                     ? 'border-gray-800 hover:border-cyan-400/50'
                     : 'border-gray-900 hover:border-gray-700'
               } ${draggedTaskId ? 'border-dashed border-gray-700' : ''}`}
             >
-              <div className="flex items-center space-x-6 mb-10">
+              <div className="flex items-center space-x-6 mb-6">
                 <div className={`w-16 h-16 rounded-full bg-[#1a1a1a] flex flex-col items-center justify-center border transition-colors ${isActive ? 'border-cyan-400' : 'border-gray-800 group-hover:border-cyan-500/50'}`}>
-                  <span className="text-xl font-black text-white leading-none">{sectionTasks.length}</span>
+                  <span className="text-xl font-black text-white leading-none">
+                    {criticidadFilter ? filteredTasks.length : allSectionTasks.length}
+                  </span>
                   <span className="text-[8px] font-bold text-gray-500 uppercase mt-1">Tareas</span>
                 </div>
                 <h2 className={`text-4xl font-black italic tracking-tighter uppercase transition-colors ${isActive ? 'text-cyan-400' : 'text-white group-hover:text-cyan-400'}`}>
                   {section.title}
                 </h2>
+              </div>
+
+              {/* Criticidad mini-breakdown */}
+              <div className="flex gap-1.5 mb-8" onClick={(e) => e.stopPropagation()}>
+                {(['P0', 'P1', 'P2', 'P3'] as const).map(level => (
+                  counts[level] > 0 && (
+                    <button
+                      key={level}
+                      onClick={() => setCriticidadFilter(criticidadFilter === level ? null : level)}
+                      className={`flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded-md border transition-all ${
+                        criticidadFilter === level
+                          ? getCriticidadColor(level)
+                          : 'text-gray-600 border-gray-800 hover:border-gray-700 hover:text-gray-400'
+                      }`}
+                    >
+                      <span className={`w-1 h-1 rounded-full ${getCriticidadDot(level)}`} />
+                      {level} <span className="opacity-70">·{counts[level]}</span>
+                    </button>
+                  )
+                ))}
               </div>
 
               {/* Categories */}
@@ -794,11 +876,11 @@ const handleClassify = async () => {
       {/* In-page Task List Section */}
       {selectedTorre && (
         <div className="mt-16 bg-[#0a0a0a] rounded-[40px] border-2 border-cyan-400/30 p-10 shadow-[0_0_100px_rgba(0,0,0,0.5)] animate-in fade-in slide-in-from-bottom-8 duration-700">
-          <div className="flex justify-between items-center mb-10">
+          <div className="flex justify-between items-center mb-8">
             <div className="flex items-center space-x-6">
               <div className="w-16 h-16 rounded-full bg-[#1a1a1a] flex flex-col items-center justify-center border border-cyan-400/50">
                 <span className="text-xl font-black text-white leading-none">
-                  {tasks.filter(t => t.torre === selectedTorre).length}
+                  {getFilteredSortedTasks(selectedTorre).length}
                 </span>
                 <span className="text-[8px] font-bold text-gray-500 uppercase mt-1">Tareas</span>
               </div>
@@ -809,36 +891,69 @@ const handleClassify = async () => {
                 <p className="text-gray-500 text-xs font-bold uppercase tracking-widest mt-2">Actividades Clasificadas</p>
               </div>
             </div>
-            <button 
-              onClick={() => setSelectedTorre(null)}
-              className="px-6 py-3 rounded-2xl bg-gray-900 text-gray-400 hover:text-white hover:bg-gray-800 transition-all font-bold text-xs uppercase tracking-widest"
-            >
-              Cerrar Lista
-            </button>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {tasks.filter(t => t.torre === selectedTorre).map(task => (
-              <TaskCard key={task.id} task={task} />
-            ))}
-            {tasks.filter(t => t.torre === selectedTorre).length === 0 && (
-              <div className="col-span-full py-20 text-center border-2 border-dashed border-gray-900 rounded-[30px]">
-                <p className="text-gray-600 italic text-lg">No hay tareas clasificadas en esta torre aún.</p>
-                <p className="text-gray-700 text-xs uppercase font-bold mt-2">Ingresa un problema arriba para comenzar</p>
+            <div className="flex items-center gap-4">
+              <div onClick={(e) => e.stopPropagation()}>
+                <CriticidadFilterBar />
               </div>
-            )}
+              <button
+                onClick={() => setSelectedTorre(null)}
+                className="px-6 py-3 rounded-2xl bg-gray-900 text-gray-400 hover:text-white hover:bg-gray-800 transition-all font-bold text-xs uppercase tracking-widest"
+              >
+                Cerrar Lista
+              </button>
+            </div>
           </div>
+
+          {/* P0 first — group headers when no filter is active */}
+          {criticidadFilter === null ? (
+            <div className="space-y-8">
+              {(['P0', 'P1', 'P2', 'P3'] as const).map(level => {
+                const levelTasks = tasks
+                  .filter(t => t.torre === selectedTorre && t.criticidad === level);
+                if (levelTasks.length === 0) return null;
+                return (
+                  <div key={level}>
+                    <div className="flex items-center gap-3 mb-4">
+                      <span className={`text-xs font-black px-3 py-1 rounded-lg border ${getCriticidadColor(level)}`}>
+                        {level}
+                      </span>
+                      <div className="flex-1 h-px bg-gray-900" />
+                      <span className="text-[10px] text-gray-700 font-bold">{levelTasks.length} tarea{levelTasks.length !== 1 ? 's' : ''}</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {levelTasks.map(task => <TaskCard key={task.id} task={task} />)}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {getFilteredSortedTasks(selectedTorre).map(task => (
+                <TaskCard key={task.id} task={task} />
+              ))}
+              {getFilteredSortedTasks(selectedTorre).length === 0 && (
+                <div className="col-span-full py-20 text-center border-2 border-dashed border-gray-900 rounded-[30px]">
+                  <p className="text-gray-600 italic text-lg">No hay tareas con criticidad {criticidadFilter} en esta torre.</p>
+                  <button
+                    onClick={() => setCriticidadFilter(null)}
+                    className="mt-4 text-gray-700 text-xs uppercase font-bold hover:text-gray-500 transition-colors"
+                  >
+                    Quitar filtro
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="mt-10 flex flex-wrap gap-4 items-center">
-            
-            <span className="ml-4 text-[10px] text-white  bg-[#0a0a0a] border border-gray-800 px-3 py-1 rounded-full">
+            <span className="ml-4 text-[10px] text-white bg-[#0a0a0a] border border-gray-800 px-3 py-1 rounded-full">
               💡 Haz clic en una torre para ver sus tareas · Arrastra para mover entre torres
             </span>
           </div>
-
         </div>
       )}
     </div>
-    
   );
 };
 

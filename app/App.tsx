@@ -550,73 +550,42 @@ const TaskClassifier: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       console.error("Error fetching tasks:", error);
     }
   };
+const handleClassify = async () => {
+  if (!input.trim() || isClassifying) return;
+  setIsClassifying(true);
+  try {
+    const classifyRes = await fetch('/api/classify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ description: input }),
+    });
+    const result = await classifyRes.json();
 
-  const handleClassify = async () => {
-      if (!input.trim() || isClassifying) return;
-      setIsClassifying(true);
-      try {
-        const classifyRes = await fetch('/api/classify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ description: input }),
-        });
-        const result = await classifyRes.json();
-
-        const newTask: ClassifiedTask = {
-          id: Math.random().toString(36).substr(2, 9),
-          description: input,
-          torre: result.torre,
-          criticidad: result.criticidad,
-          timestamp: Date.now(),
-        };
-
-        const saveResponse = await fetch('/api/tasks', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newTask),
-        });
-
-        if (saveResponse.ok) {
-          setTasks(prev => [newTask, ...prev]);
-          setInput('');
-        }
-      } catch (error) {
-        console.error("Error classifying task:", error);
-        alert("Error al clasificar la tarea. Por favor intenta de nuevo.");
-      } finally {
-        setIsClassifying(false);
-      }
+    const newTask: ClassifiedTask = {
+      id: Math.random().toString(36).substr(2, 9),
+      description: input,
+      torre: result.torre,
+      criticidad: result.criticidad,
+      timestamp: Date.now(),
     };
 
-      const content = response.choices[0].message.content;
-      const result = JSON.parse(content || '{}');
-      
-      const newTask: ClassifiedTask = {
-        id: Math.random().toString(36).substr(2, 9),
-        description: input,
-        torre: result.torre as any,
-        criticidad: result.criticidad as any,
-        timestamp: Date.now(),
-      };
+    const saveResponse = await fetch('/api/tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newTask),
+    });
 
-      // Save to DB
-      const saveResponse = await fetch('/api/tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newTask),
-      });
-
-      if (saveResponse.ok) {
-        setTasks(prev => [newTask, ...prev]);
-        setInput('');
-      }
-    } catch (error) {
-      console.error("Error classifying task:", error);
-      alert("Error al clasificar la tarea. Por favor intenta de nuevo.");
-    } finally {
-      setIsClassifying(false);
+    if (saveResponse.ok) {
+      setTasks(prev => [newTask, ...prev]);
+      setInput('');
     }
-  };
+  } catch (error) {
+    console.error("Error classifying task:", error);
+    alert("Error al clasificar la tarea. Por favor intenta de nuevo.");
+  } finally {
+    setIsClassifying(false);
+  }
+};
 
   const updateTaskCriticidad = async (taskId: string, newLevel: 'P0' | 'P1' | 'P2' | 'P3') => {
     try {

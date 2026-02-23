@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@google/genai": "^1.42.0",
+    "@neondatabase/serverless": "^1.0.2",
     "better-sqlite3": "^12.6.2",
     "express": "^5.2.1",
     "openai": "^6.22.0",

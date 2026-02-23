@@ -113,6 +113,8 @@ const NommyImprovements: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     { title: "Vista de “Metas/Objetivos” en Mi Equipo para el portal de empleados y la app", desc: "Mostrar y crear metas y objetivos asignados a cada miembro del equipo en el portal de empleados y la app móvil.", status: "Planeación", color: "text-cyan-400" },
     { title: "Generar reportes de predicción de rotación de personal", desc: "Crear un dashboard que muestra el costo e índice de rotación de personal.", status: "Planeación", color: "text-cyan-400" },
     { title: "Gestión de gastos empresariales", desc: "Los empleados podrán subir a través de la app y el portal web los gastos empresariales, los cuales serán revisados en Nommy. Crear un dashboard de gastos empresariales por empleado/depto/empresa.", status: "Planeación", color: "text-cyan-400" },
+    { title: "Control de inventario", desc: "Crear un sistema de control de inventario para monitorear el stock de productos.", status: "Planeación", color: "text-cyan-400" },
+    { title: "Crear guías de capacitación", desc: "Agrega tus cursos de capacitación personalizados a Nommy.", status: "Planeación", color: "text-cyan-400" },
   ];
 
   return (

@@ -109,6 +109,8 @@ const NommyImprovements: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const improvements = [
     { title: "Rotación de horarios", desc: "Modificar el cómo funciona la rotación de horarios para que se asigne de manera automática.", status: "Planeación", color: "text-cyan-400" },
     { title: "Conectar puestos y reclutamiento", desc: "Nommy te permite elegir un puesto que tienes registrado en la plataforma para contratar a un empleado para ese puesto", status: "Planeación", color: "text-cyan-400" },
+    { title: "Dashboards personalizados y creación de gráficos con IA", desc: "Crear dashboards personalizados con IA para visualizar datos clave de manera intuitiva.", status: "Planeación", color: "text-cyan-400" },
+    { title: "Vista de “Metas/Objetivos” en Mi Equipo para el portal de empleados y la app", desc: "Mostrar y crear metas y objetivos asignados a cada miembro del equipo en el portal de empleados y la app móvil.", status: "Planeación", color: "text-cyan-400" },
   ];
 
   return (

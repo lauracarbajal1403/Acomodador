@@ -7,7 +7,7 @@ import {
   URGENT_TASKS, 
   HIGH_PRIORITY_TASKS 
 } from './constants';
-import { Priority, Task, MemberWorkload } from './types';
+import { Priority, Task, MemberWorkload } from '../types';
 
 // --- Sub-components ---
 

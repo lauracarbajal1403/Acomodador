@@ -516,7 +516,6 @@ const CycleDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   );
 };
 
-import OpenAI from "openai";
 
 // --- View: Task Classifier ---
 
@@ -553,44 +552,41 @@ const TaskClassifier: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   };
 
   const handleClassify = async () => {
-    if (!input.trim() || isClassifying) return;
+      if (!input.trim() || isClassifying) return;
+      setIsClassifying(true);
+      try {
+        const classifyRes = await fetch('/api/classify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ description: input }),
+        });
+        const result = await classifyRes.json();
 
-    setIsClassifying(true);
-    try {
-      const openai = new OpenAI({ 
-        apiKey: process.env.OPENAI_API_KEY,
-        dangerouslyAllowBrowser: true 
-      });
+        const newTask: ClassifiedTask = {
+          id: Math.random().toString(36).substr(2, 9),
+          description: input,
+          torre: result.torre,
+          criticidad: result.criticidad,
+          timestamp: Date.now(),
+        };
 
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: `
-              Clasifica el problema de software en una TORRE (SOPORTE, CLIENTES, PRODUCTO) and a NIVEL DE CRITICIDAD (P0, P1, P2, P3).
-              
-              CRITERIOS DE TORRE:
-              1. SOPORTE: Clientes existentes. Incidentes, errores, dudas técnicas.
-              2. CLIENTES: Implementaciones nuevas (Go-Live). Cargas iniciales, parametrización.
-              3. PRODUCTO: Nuevos features, cambios normativos, refactors.
+        const saveResponse = await fetch('/api/tasks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newTask),
+        });
 
-              CRITERIOS DE CRITICIDAD:
-              - P0: Bloqueo total (Nómina no calcula/timbra, IMSS no procesa, plataforma caída). Riesgo inmediato.
-              - P1: Impacto alto. Error en cálculo o integración que bloquea go-live, pero hay operación parcial o workaround limitado.
-              - P2: Impacto medio/bajo. Ajustes de parámetros, dudas técnicas, mejora menor de UX. No bloquea operación.
-              - P3: Evolutivo/Roadmap. Nuevo feature, optimización, reporte complejo. Sin urgencia operativa.
-
-              Responde ÚNICAMENTE en formato JSON con las llaves "torre" y "criticidad".
-            `
-          },
-          {
-            role: "user",
-            content: `Clasifica el siguiente problema de software: "${input}"`
-          }
-        ],
-        response_format: { type: "json_object" }
-      });
+        if (saveResponse.ok) {
+          setTasks(prev => [newTask, ...prev]);
+          setInput('');
+        }
+      } catch (error) {
+        console.error("Error classifying task:", error);
+        alert("Error al clasificar la tarea. Por favor intenta de nuevo.");
+      } finally {
+        setIsClassifying(false);
+      }
+    };
 
       const content = response.choices[0].message.content;
       const result = JSON.parse(content || '{}');

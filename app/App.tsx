@@ -220,7 +220,7 @@ const CycleDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
         <div>
           <h1 className="text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
-            Ciclo 34
+            Ciclo 36
           </h1>
           <p className="text-gray-400 mt-2 font-medium">
             Dashboard Ejecutivo — Actualizado Febrero 2026
@@ -242,14 +242,14 @@ const CycleDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         <div className="bg-[#1c2128] rounded-2xl p-8 border border-gray-800/50 shadow-xl border-t-2 border-t-cyan-400 relative overflow-hidden">
           <div className="flex justify-between items-start mb-6">
             <h3 className="text-gray-400 font-bold text-xs uppercase tracking-widest">Development</h3>
-            <span className="bg-gray-800/80 text-[10px] px-2 py-1 rounded-full text-gray-300 font-bold">13 tareas</span>
+            <span className="bg-gray-800/80 text-[10px] px-2 py-1 rounded-full text-gray-300 font-bold">5 tareas</span>
           </div>
-          <div className="text-5xl font-black mb-8">13</div>
+          <div className="text-5xl font-black mb-8">5</div>
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-[#2d333b]/40 p-4 rounded-xl text-center">
-              <div className="text-[11px] font-bold text-emerald-400">Toño: 40%</div>
-              <div className="text-[11px] font-bold text-emerald-400">Mau: 38%</div>
-              <div className="text-[11px] font-bold text-emerald-400">Alan: 12%</div>
+              <div className="text-[11px] font-bold text-emerald-400">Toño: 20%</div>
+              <div className="text-[11px] font-bold text-emerald-400">Mau: 60%</div>
+              <div className="text-[11px] font-bold text-emerald-400">Diego: 20%</div>
             </div>
             <div className="bg-[#2d333b]/40 p-4 rounded-xl text-center">
               <div className="text-xl font-bold text-cyan-400">{DASHBOARD_STATS.development.percentage}</div>
@@ -261,15 +261,20 @@ const CycleDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         <div className="bg-[#1c2128] rounded-2xl p-8 border border-gray-800/50 shadow-xl border-t-2 border-t-cyan-500 relative">
           <div className="flex justify-between items-start mb-6">
             <h3 className="text-gray-400 font-bold text-xs uppercase tracking-widest">In Progress</h3>
-            <span className="bg-gray-800/80 text-[10px] px-2 py-1 rounded-full text-gray-300 font-bold">8 tareas</span>
+            <span className="bg-gray-800/80 text-[10px] px-2 py-1 rounded-full text-gray-300 font-bold">5 tareas</span>
           </div>
-          <div className="text-5xl font-black mb-8">8</div>
+          <div className="text-5xl font-black mb-8">5</div>
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-[#2d333b]/40 p-4 rounded-xl text-center">
               <div className="text-xl font-bold text-cyan-400">{DASHBOARD_STATS.inProgress.membersCount}</div>
               <div className="text-[10px] text-gray-500 font-medium">Miembros</div>
             </div>
             <div className="bg-[#2d333b]/40 p-4 rounded-xl text-center">
+              
+              <div className="text-[11px] font-bold text-emerald-400">Toño: 20%</div>
+              <div className="text-[11px] font-bold text-emerald-400">Mau: 60%</div>
+              <div className="text-[11px] font-bold text-emerald-400">Alan: 20%</div>
+            
               <div className="text-xl font-bold text-cyan-400">{DASHBOARD_STATS.inProgress.percentage}</div>
               <div className="text-[10px] text-gray-500 font-medium">del total</div>
             </div>
@@ -279,7 +284,7 @@ const CycleDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         <div className="bg-[#1c2128] rounded-2xl p-8 border border-gray-800/50 shadow-xl border-t-2 border-t-violet-500 relative">
           <div className="flex justify-between items-start mb-6">
             <h3 className="text-gray-400 font-bold text-xs uppercase tracking-widest">To do</h3>
-            <span className="bg-gray-800/80 text-[10px] px-2 py-1 rounded-full text-gray-300 font-bold">77 tareas</span>
+            <span className="bg-gray-800/80 text-[10px] px-2 py-1 rounded-full text-gray-300 font-bold">78 tareas</span>
           </div>
           <div className="text-5xl font-black mb-8">77</div>
           <div className="grid grid-cols-2 gap-4">
@@ -288,6 +293,12 @@ const CycleDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               <div className="text-[10px] text-gray-500 font-medium">Miembros</div>
             </div>
             <div className="bg-[#2d333b]/40 p-4 rounded-xl text-center">
+              <div className="text-[11px] font-bold text-emerald-400">Toño: 14.2%</div>
+              <div className="text-[11px] font-bold text-emerald-400">Mau: 11.5%</div>
+              <div className="text-[11px] font-bold text-emerald-400">Alan: 24.35%</div>
+              <div className="text-[11px] font-bold text-emerald-400">Diego: 19.2%</div>
+              <div className="text-[11px] font-bold text-emerald-400">Manny: 28.2%</div>
+              <div className="text-[11px] font-bold text-emerald-400">Adrián: 2.56%</div>
               <div className="text-xl font-bold text-violet-400">{DASHBOARD_STATS.reviewBacklog.percentage}</div>
               <div className="text-[10px] text-gray-500 font-medium">del total</div>
             </div>

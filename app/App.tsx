@@ -417,19 +417,19 @@ const CycleDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               </h4>
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-[#22272e] border border-gray-800/50 p-4 rounded-xl text-center">
-                  <div className="text-2xl font-black text-rose-500">6</div>
+                  <div className="text-2xl font-black text-rose-500">7</div>
                   <div className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1">Urgentes</div>
                 </div>
                 <div className="bg-[#22272e] border border-gray-800/50 p-4 rounded-xl text-center">
-                  <div className="text-2xl font-black text-orange-500">15</div>
+                  <div className="text-2xl font-black text-orange-500">16</div>
                   <div className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1">Alta</div>
                 </div>
                 <div className="bg-[#22272e] border border-gray-800/50 p-4 rounded-xl text-center">
-                  <div className="text-2xl font-black text-cyan-500">21</div>
+                  <div className="text-2xl font-black text-cyan-500">31</div>
                   <div className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1">Media</div>
                 </div>
                 <div className="bg-[#22272e] border border-gray-800/50 p-4 rounded-xl text-center">
-                  <div className="text-2xl font-black text-violet-500">28</div>
+                  <div className="text-2xl font-black text-violet-500">35</div>
                   <div className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1">Baja</div>
                 </div>
               </div>
